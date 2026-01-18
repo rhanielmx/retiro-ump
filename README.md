@@ -182,7 +182,11 @@ retiro-ump/
 2. **Configure as variáveis de ambiente:**
    - `DATABASE_URL`
    - `NEXT_PUBLIC_BASE_URL`
-3. **Deploy automático** a cada push
+3. **O projeto já inclui configuração otimizada** para Vercel:
+   - Build command: `prisma generate && next build`
+   - Postinstall hook para gerar o cliente Prisma
+   - Configuração de funções serverless
+4. **Deploy automático** a cada push
 
 ### Outras Opções
 
