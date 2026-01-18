@@ -1,36 +1,229 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Retiro de Jovens UMP
 
-## Getting Started
+Landing page para o Retiro de Jovens da Mocidade de Jovens (UMP) com sistema de inscrições online.
 
-First, run the development server:
+## 🎯 Sobre o Projeto
 
+Este projeto é uma landing page completa para divulgar e gerenciar inscrições do Retiro de Jovens UMP. O retiro tem como tema **"Glorificando a Deus nos relacionamentos"** baseado em 1 Coríntios 10:31.
+
+### ✨ Funcionalidades
+
+- **Página inicial responsiva** com informações do retiro
+- **Galeria de fotos** do retiro anterior
+- **Mapa interativo** da localização (Praia da Baleia - CE)
+- **Formulário de inscrição** completo com validação
+- **Integração com banco de dados** PostgreSQL via Prisma ORM
+- **Design moderno** com cores da igreja e UMP
+- **Totalmente responsivo** para dispositivos móveis
+
+## 🛠️ Tecnologias Utilizadas
+
+### Frontend
+- **Next.js 16** - Framework React com App Router
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Framework CSS utilitário
+- **Shadcn/ui** - Componentes UI modernos
+- **React Hook Form** - Gerenciamento de formulários
+- **Zod** - Validação de esquemas
+
+### Backend
+- **Next.js API Routes** - API REST
+- **Prisma ORM** - ORM para banco de dados
+- **PostgreSQL** - Banco de dados (Neon)
+
+### Infraestrutura
+- **Vercel** - Deploy e hospedagem
+- **Git** - Controle de versão
+
+## 🎨 Paleta de Cores
+
+### Igreja
+- Preto: `#000000`
+- Branco: `#FFFFFF`
+- Verde principal: `#146844`
+- Verde escuro: `#05321f`
+- Bege: `#ce9768`
+- Cinza: `#d9d9d9`
+
+### Mocidade de Jovens (UMP)
+- Branco: `#FFFFFF`
+- Azul: `#0033A0`
+- Vermelho: `#FF0000`
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+
+- Node.js 18+
+- PostgreSQL (ou Neon para produção)
+- Git
+
+### Instalação
+
+1. **Clone o repositório:**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/seu-usuario/retiro-ump.git
+cd retiro-ump
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Instale as dependências:**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Configure o banco de dados:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   Crie um arquivo `.env` na raiz do projeto:
+```env
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/retiro_ump"
+NEXT_PUBLIC_BASE_URL="http://localhost:3000"
+NODE_ENV="development"
+```
 
-## Learn More
+4. **Execute as migrações do Prisma:**
+```bash
+npx prisma db push
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. **Execute o projeto:**
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+6. **Acesse:** `http://localhost:3000`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Estrutura do Projeto
 
-## Deploy on Vercel
+```
+retiro-ump/
+├── prisma/
+│   ├── schema.prisma       # Schema do banco de dados
+│   └── seed.ts            # Dados iniciais
+├── public/
+│   ├── 1.jpeg a 6.jpeg    # Fotos da galeria
+│   └── card_retiro.jpeg   # Card do retiro
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── register/
+│   │   │       └── route.ts    # API de inscrição
+│   │   ├── globals.css         # Estilos globais
+│   │   ├── layout.tsx          # Layout principal
+│   │   └── page.tsx            # Página inicial
+│   ├── components/
+│   │   ├── ui/                 # Componentes Shadcn/ui
+│   │   └── registration-form.tsx # Formulário de inscrição
+│   └── lib/
+│       ├── prisma.ts           # Cliente Prisma
+│       ├── env.ts             # Configurações de ambiente
+│       └── utils.ts           # Utilitários
+├── components.json             # Configuração Shadcn/ui
+├── package.json               # Dependências
+├── tailwind.config.ts         # Configuração Tailwind
+└── next.config.ts             # Configuração Next.js
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🗄️ Banco de Dados
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Modelos Principais
+
+#### Participante (Participant)
+- Dados pessoais (nome, email, telefone, idade)
+- Informações de emergência
+- Controle de inscrição e pagamento
+
+#### Pagamento (Payment)
+- Vinculação com participante
+- Controle de pagamentos
+- Status e comprovantes
+
+#### Evento (Event)
+- Informações do retiro
+- Capacidade e preços
+
+## 📋 Funcionalidades do Sistema
+
+### ✅ Implementadas
+- [x] Landing page responsiva
+- [x] Galeria de fotos
+- [x] Mapa interativo
+- [x] Formulário de inscrição
+- [x] Validação de dados
+- [x] Integração com banco
+- [x] Design system consistente
+
+### 🔄 Próximas Implementações
+- [ ] Sistema de pagamentos
+- [ ] Painel administrativo
+- [ ] Confirmação por email
+- [ ] Relatórios de inscrições
+
+## 🎨 Design System
+
+### Componentes Principais
+- **Hero Section** - Apresentação do retiro
+- **About Section** - Informações detalhadas
+- **Photo Gallery** - Galeria de fotos
+- **Location Section** - Mapa e endereço
+- **Registration Form** - Formulário de inscrição
+- **Footer** - Informações de contato
+
+### Responsividade
+- **Mobile-first** approach
+- Breakpoints otimizados
+- Imagens responsivas
+- Tipografia escalável
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+
+1. **Conecte o repositório** no Vercel
+2. **Configure as variáveis de ambiente:**
+   - `DATABASE_URL`
+   - `NEXT_PUBLIC_BASE_URL`
+3. **Deploy automático** a cada push
+
+### Outras Opções
+
+O projeto pode ser facilmente deployado em:
+- Netlify
+- Railway
+- Render
+- DigitalOcean App Platform
+
+## 🤝 Como Contribuir
+
+1. **Fork** o projeto
+2. **Crie uma branch** para sua feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** para a branch (`git push origin feature/AmazingFeature`)
+5. **Abra um Pull Request**
+
+### Padrões de Código
+- Use TypeScript para tipagem
+- Siga as convenções do Next.js
+- Mantenha commits descritivos
+- Teste suas mudanças
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 🙏 Agradecimentos
+
+- **Igreja** pela oportunidade de servir
+- **Mocidade de Jovens UMP** pela organização
+- **Comunidade Next.js** pelos recursos
+- **Shadcn/ui** pelos componentes incríveis
+
+## 📞 Contato
+
+Para dúvidas ou sugestões:
+- **Email:** contato@ump.com.br
+- **Instagram:** @ump_jovens
+- **Telefone:** (00) 00000-0000
+
+---
+
+**Desenvolvido com ❤️ para a Mocidade de Jovens UMP**

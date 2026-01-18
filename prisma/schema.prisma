@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Participant {
+  id     String  @id @default(cuid())
+  name   String
+  email  String  @unique
+  phone  String
+  age    Int
+  church String? // Caso aceite de outras igrejas
+
+  // Informações adicionais
+  emergencyContact String
+  emergencyPhone   String
+  foodRestrictions String?
+  observations     String?
+
+  // Controle
+  registeredAt DateTime  @default(now())
+  confirmed    Boolean   @default(false)
+  paid         Boolean   @default(false)
+  paidAmount   Decimal   @default(0) @db.Decimal(10, 2)
+  paidAt       DateTime?
+
+  // Futuro: relacionamento com pagamentos
+  payments Payment[]
+
+  @@index([email])
+  @@index([confirmed])
+  @@index([paid])
+}
+
+model Payment {
+  id            String      @id @default(cuid())
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  amount Decimal @db.Decimal(10, 2)
+  method String // PIX, Dinheiro, Cartão, etc
+  status String  @default("pending") // pending, confirmed, cancelled
+
+  paidAt      DateTime  @default(now())
+  confirmedAt DateTime?
+
+  receipt String? // URL do comprovante se houver
+  notes   String?
+
+  @@index([participantId])
+  @@index([status])
+}
+
+model Event {
+  id              String   @id @default(cuid())
+  name            String
+  date            DateTime
+  location        String
+  description     String?
+  maxParticipants Int?
+  price           Decimal  @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
