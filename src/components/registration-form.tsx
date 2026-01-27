@@ -13,13 +13,13 @@ import { AlertCircle, CheckCircle } from 'lucide-react';
 
 const registrationSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
   phone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
   age: z.number().min(13, 'Idade mínima é 13 anos').max(100, 'Idade máxima é 100 anos'),
   church: z.string().optional(),
   emergencyContact: z.string().min(2, 'Nome do contato deve ter pelo menos 2 caracteres'),
   emergencyPhone: z.string().min(10, 'Telefone do contato deve ter pelo menos 10 dígitos'),
   foodRestrictions: z.string().optional(),
+  medications: z.string().optional(),
   observations: z.string().optional(),
 });
 
@@ -34,13 +34,13 @@ export function RegistrationForm() {
     resolver: zodResolver(registrationSchema),
     defaultValues: {
       name: '',
-      email: '',
       phone: '',
       age: undefined,
       church: '',
       emergencyContact: '',
       emergencyPhone: '',
       foodRestrictions: '',
+      medications: '',
       observations: '',
     },
   });
@@ -95,7 +95,7 @@ export function RegistrationForm() {
                   <FormItem>
                     <FormLabel>Nome Completo *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Seu nome completo" {...field} />
+                      <Input placeholder="Seu nome completo" className="placeholder:text-muted-foreground/50" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,12 +103,12 @@ export function RegistrationForm() {
               />
               <FormField
                 control={form.control}
-                name="email"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email *</FormLabel>
+                    <FormLabel>Telefone *</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="seu@email.com" {...field} />
+                      <Input placeholder="(00) 00000-0000" className="placeholder:text-muted-foreground/50" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -117,19 +117,6 @@ export function RegistrationForm() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Telefone *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="(00) 00000-0000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="age"
@@ -140,6 +127,7 @@ export function RegistrationForm() {
                       <Input
                         type="number"
                         placeholder="18"
+                        className="placeholder:text-muted-foreground/50"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || undefined)}
                       />
@@ -148,24 +136,20 @@ export function RegistrationForm() {
                   </FormItem>
                 )}
               />
+              <FormField
+                name="church"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Igreja (opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Caso seja de outra igreja ou comunidade" className="placeholder:text-muted-foreground/50" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
-            <FormField
-              control={form.control}
-              name="church"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Igreja (opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome da igreja" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Caso seja de outra igreja ou comunidade
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -175,7 +159,7 @@ export function RegistrationForm() {
                   <FormItem>
                     <FormLabel>Contato de Emergência *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome do responsável" {...field} />
+                      <Input placeholder="Nome do responsável" className="placeholder:text-muted-foreground/50" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -188,7 +172,7 @@ export function RegistrationForm() {
                   <FormItem>
                     <FormLabel>Telefone de Emergência *</FormLabel>
                     <FormControl>
-                      <Input placeholder="(00) 00000-0000" {...field} />
+                      <Input placeholder="(00) 00000-0000" className="placeholder:text-muted-foreground/50" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -205,7 +189,25 @@ export function RegistrationForm() {
                   <FormControl>
                     <Textarea
                       placeholder="Alergias, intolerâncias, vegetariano, etc."
-                      className="resize-none"
+                      className="resize-none placeholder:text-muted-foreground/50"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="medications"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Medicações</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Está tomando alguma medicação no momento?"
+                      className="resize-none placeholder:text-muted-foreground/50"
                       {...field}
                     />
                   </FormControl>
@@ -223,7 +225,7 @@ export function RegistrationForm() {
                   <FormControl>
                     <Textarea
                       placeholder="Informações adicionais que gostaria de compartilhar"
-                      className="resize-none"
+                      className="resize-none placeholder:text-muted-foreground/50"
                       {...field}
                     />
                   </FormControl>
@@ -249,7 +251,7 @@ export function RegistrationForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={true}//{isSubmitting}
+              disabled={isSubmitting}
               size="lg"
             >
               {isSubmitting ? 'Enviando...' : 'Confirmar Inscrição'}

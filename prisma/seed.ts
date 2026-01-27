@@ -1,6 +1,26 @@
 import { prisma } from '../src/lib/prisma';
+import bcrypt from 'bcryptjs';
+import { PaymentType, PaymentStatus } from '../src/generated/prisma/enums';
 
 async function main() {
+  // Clear existing data
+  await prisma.payment.deleteMany({});
+  await prisma.participant.deleteMany({});
+  await prisma.event.deleteMany({});
+  await prisma.user.deleteMany({});
+
+  // Create admin user
+  const adminPassword = await bcrypt.hash('ump2026@ipb269', 10);
+  const adminUser = await prisma.user.create({
+    data: {
+      username: 'ump1itapipoca',
+      password: adminPassword,
+      role: 'ADMIN',
+    },
+  });
+
+  console.log('Admin user created:', adminUser.username);
+
   // Create the event
   const event = await prisma.event.create({
     data: {
@@ -15,147 +35,207 @@ async function main() {
 
   console.log('Event created:', event);
 
-  // Create 10 random participants
+  // Create 10 random participants with different payment types
   const participantsData = [
     {
       name: 'João Silva',
-      email: 'joao.silva@example.com',
       phone: '(85) 99999-0001',
       age: 28,
       church: 'Igreja Central',
       emergencyContact: 'Maria Silva',
       emergencyPhone: '(85) 99999-1001',
       foodRestrictions: null,
+      medications: null,
       observations: null,
       confirmed: true,
-      paid: true,
+      paymentType: PaymentType.FULL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 0,
+      totalAmount: 230.00,
       paidAmount: 230.00,
+      status: PaymentStatus.PAID,
     },
     {
       name: 'Ana Santos',
-      email: 'ana.santos@example.com',
       phone: '(85) 99999-0002',
       age: 32,
       church: 'Igreja Central',
       emergencyContact: 'Carlos Santos',
       emergencyPhone: '(85) 99999-1002',
       foodRestrictions: 'Alergia a amendoim',
+      medications: 'Anti-histamínico',
       observations: null,
       confirmed: true,
-      paid: true,
+      paymentType: PaymentType.FULL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 0,
+      totalAmount: 230.00,
       paidAmount: 230.00,
+      status: PaymentStatus.PAID,
     },
     {
       name: 'Pedro Oliveira',
-      email: 'pedro.oliveira@example.com',
       phone: '(85) 99999-0003',
       age: 25,
       church: 'Igreja do Centro',
       emergencyContact: 'Sofia Oliveira',
       emergencyPhone: '(85) 99999-1003',
       foodRestrictions: null,
+      medications: null,
       observations: 'Vegetariano',
       confirmed: false,
-      paid: false,
+      paymentType: PaymentType.FULL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 0,
+      totalAmount: 230.00,
       paidAmount: 0,
+      status: PaymentStatus.PENDING,
     },
     {
       name: 'Mariana Costa',
-      email: 'mariana.costa@example.com',
       phone: '(85) 99999-0004',
       age: 30,
       church: 'Igreja Central',
       emergencyContact: 'Roberto Costa',
       emergencyPhone: '(85) 99999-1004',
       foodRestrictions: null,
+      medications: 'Anticoncepcional',
       observations: null,
       confirmed: true,
-      paid: true,
-      paidAmount: 230.00,
+      paymentType: PaymentType.FULL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 0,
+      totalAmount: 230.00,
+      paidAmount: 100.00,
+      status: PaymentStatus.PARTIAL,
     },
     {
       name: 'Lucas Pereira',
-      email: 'lucas.pereira@example.com',
       phone: '(85) 99999-0005',
       age: 27,
       church: 'Igreja Central',
       emergencyContact: 'Fernanda Pereira',
       emergencyPhone: '(85) 99999-1005',
       foodRestrictions: 'Intolerante à lactose',
+      medications: 'Lactase',
       observations: null,
       confirmed: true,
-      paid: false,
-      paidAmount: 0,
+      paymentType: PaymentType.DAILY,
+      fullPrice: null,
+      dailyRate: 50.00,
+      daysStayed: 2,
+      discount: 0,
+      totalAmount: 100.00,
+      paidAmount: 100.00,
+      status: PaymentStatus.PAID,
     },
     {
       name: 'Carla Rodrigues',
-      email: 'carla.rodrigues@example.com',
       phone: '(85) 99999-0006',
       age: 35,
       church: 'Igreja do Sul',
       emergencyContact: 'Miguel Rodrigues',
       emergencyPhone: '(85) 99999-1006',
       foodRestrictions: null,
+      medications: 'Analgésico',
       observations: 'Precisa de cadeira de rodas',
       confirmed: false,
-      paid: false,
+      paymentType: PaymentType.DAILY,
+      fullPrice: null,
+      dailyRate: 50.00,
+      daysStayed: 3,
+      discount: 0,
+      totalAmount: 150.00,
       paidAmount: 0,
+      status: PaymentStatus.PENDING,
     },
     {
       name: 'Rafael Almeida',
-      email: 'rafael.almeida@example.com',
       phone: '(85) 99999-0007',
       age: 24,
       church: 'Igreja Central',
       emergencyContact: 'Beatriz Almeida',
       emergencyPhone: '(85) 99999-1007',
       foodRestrictions: null,
+      medications: null,
       observations: null,
       confirmed: true,
-      paid: true,
-      paidAmount: 230.00,
+      paymentType: PaymentType.PARTIAL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 30.00,
+      totalAmount: 200.00,
+      paidAmount: 150.00,
+      status: PaymentStatus.PARTIAL,
     },
     {
       name: 'Juliana Ferreira',
-      email: 'juliana.ferreira@example.com',
       phone: '(85) 99999-0008',
       age: 29,
       church: 'Igreja Central',
       emergencyContact: 'Antônio Ferreira',
       emergencyPhone: '(85) 99999-1008',
       foodRestrictions: 'Vegana',
+      medications: null,
       observations: null,
       confirmed: true,
-      paid: true,
-      paidAmount: 230.00,
+      paymentType: PaymentType.FULL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 50.00,
+      totalAmount: 180.00,
+      paidAmount: 180.00,
+      status: PaymentStatus.PAID,
     },
     {
       name: 'Gabriel Lima',
-      email: 'gabriel.lima@example.com',
       phone: '(85) 99999-0009',
       age: 26,
       church: 'Igreja Central',
       emergencyContact: 'Patrícia Lima',
       emergencyPhone: '(85) 99999-1009',
       foodRestrictions: null,
+      medications: 'Vitamina D',
       observations: null,
       confirmed: false,
-      paid: false,
+      paymentType: PaymentType.DAILY,
+      fullPrice: null,
+      dailyRate: 50.00,
+      daysStayed: 1,
+      discount: 0,
+      totalAmount: 50.00,
       paidAmount: 0,
+      status: PaymentStatus.PENDING,
     },
     {
       name: 'Amanda Souza',
-      email: 'amanda.souza@example.com',
       phone: '(85) 99999-0010',
       age: 31,
       church: 'Igreja do Norte',
       emergencyContact: 'Ricardo Souza',
       emergencyPhone: '(85) 99999-1010',
       foodRestrictions: null,
+      medications: 'Antialérgico',
       observations: 'Alergia a camarão',
       confirmed: true,
-      paid: true,
+      paymentType: PaymentType.FULL,
+      fullPrice: 230.00,
+      dailyRate: null,
+      daysStayed: null,
+      discount: 0,
+      totalAmount: 230.00,
       paidAmount: 230.00,
+      status: PaymentStatus.PAID,
     },
   ];
 
@@ -163,28 +243,41 @@ async function main() {
     const participant = await prisma.participant.create({
       data: {
         ...data,
-        paidAt: data.paid ? new Date() : null,
+        paidAt: data.status === 'PAID' ? new Date() : null,
       },
     });
 
     console.log('Participant created:', participant.name);
 
-    // Create payment if paid
-    if (data.paid) {
+    // Create payment records based on payment type and status
+    if (data.status === 'PAID' && data.paidAmount > 0) {
       const payment = await prisma.payment.create({
         data: {
           participantId: participant.id,
-          amount: 230.00,
-          method: 'PIX', // Random methods: PIX, Cartão, Dinheiro
-          status: 'confirmed',
+          amount: data.paidAmount,
+          method: 'PIX',
+          status: PaymentStatus.PAID,
           paidAt: new Date(),
           confirmedAt: new Date(),
           receipt: null,
-          notes: 'Pagamento confirmado',
+          notes: 'Pagamento total',
         },
       });
-
       console.log('Payment created for:', participant.name);
+    } else if (data.status === 'PARTIAL' && data.paidAmount > 0) {
+      const payment = await prisma.payment.create({
+        data: {
+          participantId: participant.id,
+          amount: data.paidAmount,
+          method: 'DINHEIRO',
+          status: PaymentStatus.PAID,
+          paidAt: new Date(),
+          confirmedAt: new Date(),
+          receipt: null,
+          notes: 'Pagamento parcial',
+        },
+      });
+      console.log('Partial payment created for:', participant.name);
     }
   }
 
