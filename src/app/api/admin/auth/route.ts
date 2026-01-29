@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateUser } from '@/lib/auth';
+import { authenticateUser, requireAdminAuth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,4 +31,16 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+export async function GET(request: NextRequest) {
+  // Use the existing requireAdminAuth function to verify the token
+  const authError = await requireAdminAuth(request);
+  
+  if (authError) {
+    return authError;
+  }
+
+  // If we get here, the authentication is valid
+  return NextResponse.json({ success: true });
 }
