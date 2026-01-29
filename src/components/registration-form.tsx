@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { formatPhoneNumber, validatePhoneNumber, cleanPhoneNumber } from '@/lib/phone-utils';
+import { useCreateParticipant } from '@/hooks/api';
 
 const registrationSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -26,9 +28,7 @@ const registrationSchema = z.object({
 type RegistrationForm = z.infer<typeof registrationSchema>;
 
 export function RegistrationForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
+  const createParticipantMutation = useCreateParticipant();
 
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
@@ -46,33 +46,21 @@ export function RegistrationForm() {
   });
 
   const onSubmit = async (data: RegistrationForm) => {
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
-    setErrorMessage('');
-
     try {
-      const response = await fetch('/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      // Convert form data to match API expectations
+      const participantData = {
+        ...data,
+        age: data.age || 0,
+        paymentType: 'FULL' as any, // Default payment type for registration
+        confirmed: false,
+        discount: '0',
+        paidAmount: '0'
+      };
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setSubmitStatus('success');
-        form.reset();
-      } else {
-        setSubmitStatus('error');
-        setErrorMessage(result.error || 'Erro ao enviar inscrição');
-      }
+      await createParticipantMutation.mutateAsync(participantData);
+      form.reset();
     } catch (error) {
-      setSubmitStatus('error');
-      setErrorMessage('Erro de conexão. Tente novamente.');
-    } finally {
-      setIsSubmitting(false);
+      console.error('Error submitting registration:', error);
     }
   };
 
@@ -108,7 +96,26 @@ export function RegistrationForm() {
                   <FormItem>
                     <FormLabel>Telefone *</FormLabel>
                     <FormControl>
-                      <Input placeholder="(00) 00000-0000" className="placeholder:text-muted-foreground/50" {...field} />
+                      <Input 
+                        placeholder="(00) 00000-0000" 
+                        className="placeholder:text-muted-foreground/50" 
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          // Remove todos os caracteres não numéricos
+                          const cleanValue = e.target.value.replace(/\D/g, '');
+                          
+                          // Valida se tem entre 10 e 11 dígitos
+                          if (cleanValue.length <= 11) {
+                            field.onChange(cleanValue);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Formata o número quando o campo perde o foco
+                          const formatted = formatPhoneNumber(field.value || '');
+                          field.onChange(formatted);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -172,7 +179,26 @@ export function RegistrationForm() {
                   <FormItem>
                     <FormLabel>Telefone de Emergência *</FormLabel>
                     <FormControl>
-                      <Input placeholder="(00) 00000-0000" className="placeholder:text-muted-foreground/50" {...field} />
+                      <Input 
+                        placeholder="(00) 00000-0000" 
+                        className="placeholder:text-muted-foreground/50" 
+                        {...field}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          // Remove todos os caracteres não numéricos
+                          const cleanValue = e.target.value.replace(/\D/g, '');
+                          
+                          // Valida se tem entre 10 e 11 dígitos
+                          if (cleanValue.length <= 11) {
+                            field.onChange(cleanValue);
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Formata o número quando o campo perde o foco
+                          const formatted = formatPhoneNumber(field.value || '');
+                          field.onChange(formatted);
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -234,27 +260,13 @@ export function RegistrationForm() {
               )}
             />
 
-            {submitStatus === 'success' && (
-              <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-md">
-                <CheckCircle className="h-5 w-5" />
-                <span>Inscrição realizada com sucesso! Entraremos em contato em breve.</span>
-              </div>
-            )}
-
-            {submitStatus === 'error' && (
-              <div className="flex items-center gap-2 text-red-600 bg-red-50 p-3 rounded-md">
-                <AlertCircle className="h-5 w-5" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
-
             <Button
               type="submit"
               className="w-full"
-              disabled={isSubmitting}
+              disabled={createParticipantMutation.isPending}
               size="lg"
             >
-              {isSubmitting ? 'Enviando...' : 'Confirmar Inscrição'}
+              {createParticipantMutation.isPending ? 'Enviando...' : 'Confirmar Inscrição'}
             </Button>
           </form>
         </Form>
