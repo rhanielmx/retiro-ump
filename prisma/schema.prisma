@@ -121,3 +121,56 @@ enum PaymentStatus {
   PAID // Pago
   OVERDUE // Em atraso
 }
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  category    ExpenseCategory
+  date        DateTime @default(now())
+  receiptUrl  String?  // Store PDF/image URLs
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([date])
+}
+
+model Shop {
+  id        String   @id @default(cuid())
+  name      String
+  contact   String?  // Basic contact info
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchases Purchase[]
+
+  @@index([isActive])
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  shopId    String
+  shop      Shop     @relation(fields: [shopId], references: [id])
+  amount    Decimal  @db.Decimal(10, 2)
+  items     String?  // JSON string of purchased items
+  date      DateTime @default(now())
+  receiptUrl String? // Store PDF/image URLs
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([shopId])
+  @@index([date])
+}
+
+enum ExpenseCategory {
+  FOOD // Food & Groceries
+  TRANSPORT // Transportation
+  COOKING // Housekeeping/Cooking
+  RENT // Rent/Space Rental
+  CLEANING // Cleaning Supplies
+  MATERIALS // Materials & Equipment
+  OTHER // Other/Miscellaneous
+}
