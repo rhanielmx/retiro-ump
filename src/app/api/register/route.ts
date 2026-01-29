@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create participant
+    // Create participant with default payment values
     const participant = await prisma.participant.create({
       data: {
         name,
@@ -36,6 +36,10 @@ export async function POST(request: NextRequest) {
         foodRestrictions,
         medications,
         observations,
+        // Set default payment values for full retiro
+        paymentType: 'FULL',
+        fullPrice: 230.00,
+        totalAmount: 230.00,
       },
     });
 
