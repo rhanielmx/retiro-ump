@@ -36,7 +36,7 @@ export default function AdminDashboard() {
       setCheckingAuth(true);
       const isValid = await checkAuth();
       if (!isValid) {
-        router.push('/admin');
+        router.push('/login');
       }
       setCheckingAuth(false);
       setHasInitialized(true);
@@ -50,16 +50,8 @@ export default function AdminDashboard() {
   };
 
   if (!isAuthenticated && !checkingAuth) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          <h1 className="text-2xl font-bold text-center mb-6">Área Administrativa</h1>
-          <div className="text-center text-gray-600">
-            Redirecionando para login...
-          </div>
-        </div>
-      </div>
-    );
+    router.push('/login');
+    return null;
   }
 
   return (
