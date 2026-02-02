@@ -20,8 +20,14 @@ const fetchPurchases = async (filters: PurchaseFilters = {}): Promise<Purchase[]
   const response = await fetch(`/api/admin/purchases?${params}`);
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao buscar compras');
+    let errorMessage = 'Erro ao buscar compras';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -37,8 +43,14 @@ const createPurchase = async (data: PurchaseForm): Promise<Purchase> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao criar compra');
+    let errorMessage = 'Erro ao criar compra';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -54,8 +66,14 @@ const updatePurchase = async (data: PurchaseForm & { id: string }): Promise<Purc
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao atualizar compra');
+    let errorMessage = 'Erro ao atualizar compra';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -67,8 +85,14 @@ const deletePurchase = async (id: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao excluir compra');
+    let errorMessage = 'Erro ao excluir compra';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 };
 

@@ -15,8 +15,14 @@ const login = async (credentials: LoginCredentials): Promise<AuthUser> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Falha no login');
+    let errorMessage = 'Falha no login';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   // Create token and store in localStorage

@@ -21,8 +21,14 @@ const fetchExpenses = async (filters: ExpenseFilters = {}): Promise<Expense[]> =
   const response = await fetch(`/api/admin/expenses?${params}`);
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao buscar despesas');
+    let errorMessage = 'Erro ao buscar despesas';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -38,8 +44,14 @@ const createExpense = async (data: ExpenseForm): Promise<Expense> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao criar despesa');
+    let errorMessage = 'Erro ao criar despesa';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -55,8 +67,14 @@ const updateExpense = async (data: ExpenseForm & { id: string }): Promise<Expens
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao atualizar despesa');
+    let errorMessage = 'Erro ao atualizar despesa';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -68,8 +86,14 @@ const deleteExpense = async (id: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao excluir despesa');
+    let errorMessage = 'Erro ao excluir despesa';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 };
 

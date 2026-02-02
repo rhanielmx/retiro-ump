@@ -18,8 +18,14 @@ const fetchShops = async (filters: ShopFilters = {}): Promise<Shop[]> => {
   const response = await fetch(`/api/admin/shops?${params}`);
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao buscar lojas');
+    let errorMessage = 'Erro ao buscar lojas';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -35,8 +41,14 @@ const createShop = async (data: ShopForm): Promise<Shop> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao criar loja');
+    let errorMessage = 'Erro ao criar loja';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -52,8 +64,14 @@ const updateShop = async (data: ShopForm & { id: string }): Promise<Shop> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao atualizar loja');
+    let errorMessage = 'Erro ao atualizar loja';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -65,8 +83,14 @@ const deleteShop = async (id: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao excluir loja');
+    let errorMessage = 'Erro ao excluir loja';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 };
 

@@ -22,8 +22,14 @@ const fetchParticipants = async (filters: ParticipantFilters = {}): Promise<Part
   const response = await fetch(`/api/admin/participants?${params}`);
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao buscar participantes');
+    let errorMessage = 'Erro ao buscar participantes';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -39,8 +45,14 @@ const createParticipant = async (data: CreateParticipantData): Promise<Participa
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao criar participante');
+    let errorMessage = 'Erro ao criar participante';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -56,8 +68,15 @@ const updateParticipant = async (data: UpdateParticipantData): Promise<Participa
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao atualizar participante');
+    let errorMessage = 'Erro ao atualizar participante';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      // Se não for possível parsear JSON, usa mensagem padrão
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -69,8 +88,14 @@ const deleteParticipant = async (id: string): Promise<void> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao excluir participante');
+    let errorMessage = 'Erro ao excluir participante';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 };
 
@@ -88,8 +113,14 @@ const updatePayment = async (data: PaymentUpdateData): Promise<Participant> => {
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Erro ao atualizar pagamento');
+    let errorMessage = 'Erro ao atualizar pagamento';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -112,10 +143,16 @@ export const useParticipant = (id: string) => {
     queryFn: async (): Promise<Participant> => {
       const response = await fetch(`/api/admin/participants?id=${id}`);
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao buscar participante');
-      }
+  if (!response.ok) {
+    let errorMessage = 'Erro ao atualizar participante';
+    try {
+      const error = await response.json();
+      errorMessage = error.error || errorMessage;
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || errorMessage}`;
+    }
+    throw new Error(errorMessage);
+  }
 
       const participants = await response.json();
       return participants[0]; // API returns array, get first item
