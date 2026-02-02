@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { AlertCircle, CheckCircle } from 'lucide-react';
-import { formatPhoneNumber, validatePhoneNumber, cleanPhoneNumber } from '@/lib/phone-utils';
-import { useCreateParticipant } from '@/hooks/api';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
+import { formatPhoneNumber } from '@/lib/phone-utils';
+import { usePublicRegistration, RegistrationData } from '@/hooks/use-public-registration';
 
 const registrationSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -28,7 +28,7 @@ const registrationSchema = z.object({
 type RegistrationForm = z.infer<typeof registrationSchema>;
 
 export function RegistrationForm() {
-  const createParticipantMutation = useCreateParticipant();
+  const registerMutation = usePublicRegistration();
 
   const form = useForm<RegistrationForm>({
     resolver: zodResolver(registrationSchema),
@@ -48,16 +48,16 @@ export function RegistrationForm() {
   const onSubmit = async (data: RegistrationForm) => {
     try {
       // Convert form data to match API expectations
-      const participantData = {
+      const participantData: RegistrationData = {
         ...data,
         age: data.age || 0,
-        paymentType: 'FULL' as any, // Default payment type for registration
+        paymentType: 'FULL', // Default payment type for registration
         confirmed: false,
         discount: '0',
         paidAmount: '0'
       };
 
-      await createParticipantMutation.mutateAsync(participantData);
+      await registerMutation.mutateAsync(participantData);
       form.reset();
     } catch (error) {
       console.error('Error submitting registration:', error);
@@ -109,19 +109,19 @@ export function RegistrationForm() {
                           if (cleanValue.length <= 11) {
                             field.onChange(cleanValue);
                           }
-                        }}
-                        onBlur={(e) => {
-                          // Formata o número quando o campo perde o foco
-                          const formatted = formatPhoneNumber(field.value || '');
-                          field.onChange(formatted);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                         }}
+                         onBlur={() => {
+                           // Formata o número quando o campo perde o foco
+                           const formatted = formatPhoneNumber(field.value || '');
+                           field.onChange(formatted);
+                         }}
+                       />
+                     </FormControl>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -192,21 +192,21 @@ export function RegistrationForm() {
                           if (cleanValue.length <= 11) {
                             field.onChange(cleanValue);
                           }
-                        }}
-                        onBlur={(e) => {
-                          // Formata o número quando o campo perde o foco
-                          const formatted = formatPhoneNumber(field.value || '');
-                          field.onChange(formatted);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                         }}
+                         onBlur={() => {
+                           // Formata o número quando o campo perde o foco
+                           const formatted = formatPhoneNumber(field.value || '');
+                           field.onChange(formatted);
+                         }}
+                       />
+                     </FormControl>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+             </div>
 
-            <FormField
+             <FormField
               control={form.control}
               name="foodRestrictions"
               render={({ field }) => (
@@ -263,10 +263,10 @@ export function RegistrationForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={createParticipantMutation.isPending}
+              disabled={registerMutation.isPending}
               size="lg"
             >
-              {createParticipantMutation.isPending ? 'Enviando...' : 'Confirmar Inscrição'}
+              {registerMutation.isPending ? 'Enviando...' : 'Confirmar Inscrição'}
             </Button>
           </form>
         </Form>
