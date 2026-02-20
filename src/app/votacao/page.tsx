@@ -278,6 +278,7 @@ function VoteCategoryInput({
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedNames, setSelectedNames] = useState<Record<string, string>>({});
+  const [inputDisabled, setInputDisabled] = useState(false);
 
   const searchParticipants = useCallback(async (query: string) => {
     if (query.length < 1) {
@@ -313,6 +314,7 @@ function VoteCategoryInput({
     } else {
       onSelect([participant.id]);
       setSelectedNames({ [participant.id]: participant.name });
+      setInputDisabled(true);
     }
     setSearch('');
     setShowDropdown(false);
@@ -324,13 +326,15 @@ function VoteCategoryInput({
     const newNames = { ...selectedNames };
     delete newNames[participantId];
     setSelectedNames(newNames);
+    setInputDisabled(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    if (!category.allowMultipleWinners) {
+    if (!category.allowMultipleWinners && selectedParticipantIds.length > 0) {
       setSelectedNames({});
       onSelect([]);
+      setInputDisabled(false);
     }
     setShowDropdown(true);
   };
@@ -371,7 +375,8 @@ function VoteCategoryInput({
           value={search}
           onChange={handleInputChange}
           onFocus={() => setShowDropdown(true)}
-          placeholder={category.allowMultipleWinners ? "Digite para buscar e adicionar..." : "Digite para buscar..."}
+          disabled={inputDisabled}
+          placeholder={category.allowMultipleWinners ? "Digite para buscar e adicionar..." : inputDisabled ? "Selecione um nome" : "Digite para buscar..."}
           className={`w-full ${search && !isValidSelection && !category.allowMultipleWinners ? 'border-red-500' : ''}`}
         />
         {showDropdown && (participants.length > 0 || loading) && (
