@@ -12,7 +12,8 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const tabs = [
     { id: 'participants', label: 'Participantes', icon: '👥' },
     { id: 'expenses', label: 'Despesas', icon: '💰' },
-    { id: 'shops', label: 'Lojas', icon: '🏪' }
+    { id: 'shops', label: 'Lojas', icon: '🏪' },
+    { id: 'votacao', label: 'Votação', icon: '🏆' }
   ];
 
   return (

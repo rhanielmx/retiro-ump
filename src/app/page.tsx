@@ -1,7 +1,9 @@
 import Image from "next/image";
+import Link from "next/link";
 import { RegistrationForm } from "@/components/registration-form";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, MapPin, Users, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, Users, Clock, Trophy } from "lucide-react";
 import { ScheduleSection } from "@/components/schedule";
 import { ThemesSection } from "@/components/themes";
 import { PhotosSection } from "@/components/photos";
@@ -128,6 +130,24 @@ export default function Home() {
             </div>
           </div>
           <RegistrationForm />
+        </div>
+      </section>
+
+      {/* Votação Section */}
+      <section className="py-16 px-4 bg-muted/30">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8">
+            Votação do Retiro
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Participe da votação para eleger os melhores momentos do retiro!
+          </p>
+          <Link href="/votacao">
+            <Button size="lg" className="gap-2">
+              <Trophy className="h-5 w-5" />
+              Ir para Votação
+            </Button>
+          </Link>
         </div>
       </section>
 

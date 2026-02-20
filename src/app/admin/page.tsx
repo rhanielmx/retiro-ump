@@ -45,6 +45,13 @@ export default function AdminDashboard() {
     initializeAuth();
   }, [checkAuth, hasInitialized, router]);
 
+  // Redirect to votacao page when tab changes
+  useEffect(() => {
+    if (activeTab === 'votacao') {
+      router.push('/admin/votacao');
+    }
+  }, [activeTab, router]);
+
   const handleLogout = () => {
     logout();
   };

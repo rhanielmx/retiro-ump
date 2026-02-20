@@ -174,3 +174,45 @@ enum ExpenseCategory {
   MATERIALS // Materials & Equipment
   OTHER // Other/Miscellaneous
 }
+
+// =====================
+// Modelos de Votação
+// =====================
+
+// Categorias de votação (ex: "Melhor pregador", "Melhor louvor")
+model VoteCategory {
+  id                  String   @id @default(cuid())
+  name                String
+  order               Int      @default(0)
+  isActive            Boolean  @default(true)
+  allowMultipleWinners Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  votes               Vote[]
+
+  @@map("vote_categories")
+}
+
+// Participantes do retiro (para autocomplete)
+model ParticipantVoting {
+  id        String   @id @default(cuid())
+  name      String
+  nickname  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("participant_voting")
+}
+
+// Votos registrados
+model Vote {
+  id             String   @id @default(cuid())
+  categoryId     String
+  category       VoteCategory       @relation(fields: [categoryId], references: [id])
+  participantIds String[]
+  deviceId       String
+  createdAt      DateTime @default(now())
+
+  @@unique([categoryId, deviceId])
+  @@index([categoryId])
+  @@map("votes")
+}
