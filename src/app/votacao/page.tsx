@@ -34,11 +34,46 @@ function getDeviceId(): string {
   return deviceId;
 }
 
+function saveVotacaoState(step: number, votes: Record<string, string[]>) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem('votacao_current_step', step.toString());
+  localStorage.setItem('votacao_votes', JSON.stringify(votes));
+}
+
+function loadVotacaoState(): { step: number; votes: Record<string, string[]> } {
+  if (typeof window === 'undefined') return { step: 0, votes: {} };
+  
+  const step = parseInt(localStorage.getItem('votacao_current_step') || '0', 10);
+  const votes = JSON.parse(localStorage.getItem('votacao_votes') || '{}');
+  return { step, votes };
+}
+
+function findCurrentStep(categories: Category[], serverVotes: Record<string, string[]>): number {
+  const totalSteps = Math.ceil(categories.length / CATEGORIES_PER_STEP);
+  
+  for (let step = 0; step < totalSteps; step++) {
+    const startIdx = step * CATEGORIES_PER_STEP;
+    const endIdx = Math.min(startIdx + CATEGORIES_PER_STEP, categories.length);
+    const stepCategories = categories.slice(startIdx, endIdx);
+    
+    const allVoted = stepCategories.every(cat => 
+      serverVotes[cat.id] && serverVotes[cat.id].length > 0
+    );
+    
+    if (!allVoted) {
+      return step;
+    }
+  }
+  
+  return totalSteps;
+}
+
 export default function VotacaoPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [votes, setVotes] = useState<Record<string, string[]>>({});
+  const [serverVotes, setServerVotes] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -54,17 +89,50 @@ export default function VotacaoPage() {
   );
 
   useEffect(() => {
-    fetch('/api/votacao/categorias')
-      .then((res) => res.json())
-      .then((data) => {
-        setCategories(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => {
+    const loadData = async () => {
+      try {
+        const [categoriesRes, votesRes] = await Promise.all([
+          fetch('/api/votacao/categorias'),
+          fetch(`/api/votacao/meus-votos?deviceId=${deviceId}`),
+        ]);
+
+        const categoriesData = await categoriesRes.json();
+        const serverVotesData = await votesRes.json();
+        
+        const categoriesArray = Array.isArray(categoriesData) ? categoriesData : [];
+        setCategories(categoriesArray);
+        
+        const votesMap = votesRes.ok && typeof serverVotesData === 'object' 
+          ? serverVotesData 
+          : {};
+        setServerVotes(votesMap);
+        
+        const localState = loadVotacaoState();
+        const mergedVotes = { ...localState.votes, ...votesMap };
+        setVotes(mergedVotes);
+        
+        const calculatedStep = findCurrentStep(categoriesArray, votesMap);
+        
+        if (calculatedStep >= Math.ceil(categoriesArray.length / CATEGORIES_PER_STEP)) {
+          setCompleted(true);
+        } else {
+          setCurrentStep(calculatedStep);
+          if (calculatedStep !== localState.step) {
+            saveVotacaoState(calculatedStep, mergedVotes);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
         setCategories([]);
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    if (deviceId) {
+      loadData();
+    }
+  }, [deviceId]);
 
   const handleVote = (categoryId: string, participantIds: string[]) => {
     setVotes((prev) => ({ ...prev, [categoryId]: participantIds }));
@@ -110,11 +178,24 @@ export default function VotacaoPage() {
           setError(`Erro ao votar em "${cat.name}": ${data.error}`);
           setSubmitting(false);
           return;
+        } else {
+          setServerVotes((prev) => ({
+            ...prev,
+            [cat.id]: categoryVotes,
+          }));
         }
       }
 
-      if (currentStep < totalSteps - 1) {
-        setCurrentStep((prev) => prev + 1);
+      const newStep = currentStep + 1;
+      const updatedVotes = { ...votes };
+      stepCategories.forEach((cat) => {
+        updatedVotes[cat.id] = votes[cat.id] || [];
+      });
+      
+      saveVotacaoState(newStep, updatedVotes);
+
+      if (newStep < totalSteps) {
+        setCurrentStep(newStep);
       } else {
         setCompleted(true);
       }
@@ -225,6 +306,7 @@ export default function VotacaoPage() {
                 key={category.id}
                 category={category}
                 selectedParticipantIds={votes[category.id] || []}
+                serverParticipantIds={serverVotes[category.id] || []}
                 onSelect={(ids) => handleVote(category.id, ids)}
               />
             ))}
@@ -267,18 +349,42 @@ export default function VotacaoPage() {
 function VoteCategoryInput({
   category,
   selectedParticipantIds,
+  serverParticipantIds,
   onSelect,
 }: {
   category: Category;
   selectedParticipantIds: string[];
+  serverParticipantIds: string[];
   onSelect: (ids: string[]) => void;
 }) {
+  const hasServerVote = serverParticipantIds.length > 0;
   const [search, setSearch] = useState('');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedNames, setSelectedNames] = useState<Record<string, string>>({});
-  const [inputDisabled, setInputDisabled] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(hasServerVote);
+
+  useEffect(() => {
+    if (hasServerVote && serverParticipantIds.length > 0) {
+      const loadParticipantNames = async () => {
+        const names: Record<string, string> = {};
+        for (const id of serverParticipantIds) {
+          try {
+            const res = await fetch(`/api/votacao/participantes?id=${id}`);
+            const data = await res.json();
+            if (data && data.name) {
+              names[id] = data.name;
+            }
+          } catch (error) {
+            console.error('Error loading participant:', error);
+          }
+        }
+        setSelectedNames(names);
+      };
+      loadParticipantNames();
+    }
+  }, [hasServerVote, serverParticipantIds]);
 
   const searchParticipants = useCallback(async (query: string) => {
     if (query.length < 1) {
@@ -348,6 +454,7 @@ function VoteCategoryInput({
       <label className="text-sm font-medium">
         {category.name}
         {category.allowMultipleWinners && <span className="text-muted-foreground ml-2">(múltiplos)</span>}
+        {hasServerVote && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Já votou</span>}
       </label>
       
       {selectedParticipantIds.length > 0 && (
@@ -355,33 +462,38 @@ function VoteCategoryInput({
           {selectedParticipantIds.map((id) => (
             <span
               key={id}
-              className="inline-flex items-center gap-1 px-2 py-1 bg-primary text-primary-foreground rounded-md text-sm"
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm ${
+                hasServerVote ? 'bg-green-100 text-green-700' : 'bg-primary text-primary-foreground'
+              }`}
             >
               {selectedNames[id] || 'Carregando...'}
-              <button
-                type="button"
-                onClick={() => handleRemoveParticipant(id)}
-                className="hover:bg-white/20 rounded p-0.5"
-              >
-                <X className="h-3 w-3" />
-              </button>
+              {!hasServerVote && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveParticipant(id)}
+                  className="hover:bg-white/20 rounded p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
             </span>
           ))}
         </div>
       )}
       
-      <div className="relative">
-        <Input
-          value={search}
-          onChange={handleInputChange}
-          onFocus={() => setShowDropdown(true)}
-          disabled={inputDisabled}
-          placeholder={category.allowMultipleWinners ? "Digite para buscar e adicionar..." : inputDisabled ? "Selecione um nome" : "Digite para buscar..."}
-          className={`w-full ${search && !isValidSelection && !category.allowMultipleWinners ? 'border-red-500' : ''}`}
-        />
-        {showDropdown && (participants.length > 0 || loading) && (
-          <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-            {loading ? (
+      {!hasServerVote && (
+        <div className="relative">
+          <Input
+            value={search}
+            onChange={handleInputChange}
+            onFocus={() => setShowDropdown(true)}
+            disabled={inputDisabled}
+            placeholder={category.allowMultipleWinners ? "Digite para buscar e adicionar..." : inputDisabled ? "Selecione um nome" : "Digite para buscar..."}
+            className={`w-full ${search && !isValidSelection && !category.allowMultipleWinners ? 'border-red-500' : ''}`}
+          />
+          {showDropdown && (participants.length > 0 || loading) && (
+            <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+              {loading ? (
               <div className="px-4 py-2 text-sm text-muted-foreground">Buscando...</div>
             ) : (
               participants
@@ -399,8 +511,9 @@ function VoteCategoryInput({
             )}
           </div>
         )}
-      </div>
-      {search && !isValidSelection && !category.allowMultipleWinners && (
+        </div>
+      )}
+      {search && !isValidSelection && !category.allowMultipleWinners && !hasServerVote && (
         <p className="text-xs text-red-500">Selecione um nome da lista</p>
       )}
     </div>

@@ -5,7 +5,28 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
+    const id = searchParams.get('id');
 
+    if (id) {
+      const participant = await prisma.participantVoting.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+        },
+      });
+
+      if (!participant) {
+        return NextResponse.json(
+          { error: 'Participante não encontrado' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(participant);
+    }
+    
     let participants;
     
     if (search) {
